@@ -38,9 +38,8 @@ import moderngl_window as mglw
 import numpy as np
 from moderngl_window import geometry
 
-WIDTH = 1024
+WIDTH = 512
 HEIGHT = WIDTH
-LAYERS = 1
 
 
 class MainWindow(mglw.WindowConfig):
@@ -57,35 +56,56 @@ class MainWindow(mglw.WindowConfig):
         data = np.random.randint(
             0,
             256,
-            (WIDTH, HEIGHT, LAYERS, 4),
+            (WIDTH, HEIGHT, 4),
             dtype="u1",
         )
-        data[:, :, :, 3] = 255  # Set alpha to 255
+        data[:, :, 3] = 255  # Set alpha to 255
 
-        self.texture = self.ctx.texture_array(
-            (WIDTH, HEIGHT, LAYERS),
+        self.noise_texture = self.ctx.texture(
+            (WIDTH, HEIGHT),
             4,
             data=data,
         )
-        self.bg_quad = geometry.quad_fs()
-        self.rect_quad = geometry.quad_2d(
-            size=(0.5, 0.5),
-        )
-        self.prog = self.load_program("shader1.glsl")
+        self.final_quad = geometry.quad_fs()
+        self.final_prog = self.load_program("shader_final.glsl")
+
+        data = np.zeros((WIDTH, HEIGHT), dtype="f4")
+        # create a small rectangle in the center with depth 1.0
+        # the rest is 0.0
+        # This will create a depth buffer where the center is "closer"
+        # We have (-16; 16( layers of depth values
+        rect_size = WIDTH * 3 // 4
+        start = (WIDTH - rect_size) // 2
+        end = start + rect_size
+        data[start:end, start:end] = 3.0
+
+        rect_size = WIDTH // 2
+        start = (WIDTH - rect_size) // 2
+        end = start + rect_size
+        data[start:end, start:end] = 0.0
+
+        rect_size = WIDTH // 4
+        start = (WIDTH - rect_size) // 2
+        end = start + rect_size
+        data[start:end, start:end] = -3.0
+
+        data = (data + 16) / 32
+
+        self.depth_buffer = self.ctx.depth_texture((WIDTH, HEIGHT), data=data)
 
     def on_render(self, time: float, frame_time: float):
         self.ctx.clear()
 
-        self.texture.use(location=0)
-        self.prog["texture0"].value = 0
-        self.prog["num_layers"].value = 0
-        self.prog["depth"].value = 0
-        self.prog["time"].value = time * 0.1
-        self.texture.use(location=0)
-        self.bg_quad.render(self.prog)
+        # TODO: render scene to get depth values
 
-        self.prog["depth"].value = 1
-        self.rect_quad.render(self.prog)
+        # Final pass
+        self.noise_texture.use(location=0)
+        self.depth_buffer.use(location=1)
+        self.final_prog["noise_texture"].value = 0
+        self.final_prog["depth_texture"].value = 1
+        self.final_prog["time"].value = time
+        self.noise_texture.use(location=0)
+        self.final_quad.render(self.final_prog)
 
 
 def main():
