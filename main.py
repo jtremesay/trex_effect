@@ -52,6 +52,7 @@ class MainWindow(mglw.WindowConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # Generate the noise texture
         # Random RGB, A=1
         data = np.random.randint(
             0,
@@ -60,15 +61,17 @@ class MainWindow(mglw.WindowConfig):
             dtype="u1",
         )
         data[:, :, 3] = 255  # Set alpha to 255
-
         self.noise_texture = self.ctx.texture(
             (WIDTH, HEIGHT),
             4,
             data=data,
         )
-        self.final_quad = geometry.quad_fs()
-        self.final_prog = self.load_program("shader_final.glsl")
 
+        # Create the fullscreen quad and program
+        self.trex_quad = geometry.quad_fs()
+        self.trex_prog = self.load_program("shader_trex.glsl")
+
+        # Create a depth buffer texture with test data
         # Speed data, between -16 and 16
         data = np.zeros((WIDTH, HEIGHT), dtype="f4")
 
@@ -102,11 +105,11 @@ class MainWindow(mglw.WindowConfig):
         # Final pass
         self.noise_texture.use(location=0)
         self.depth_buffer.use(location=1)
-        self.final_prog["noise_texture"].value = 0
-        self.final_prog["depth_texture"].value = 1
-        self.final_prog["time"].value = time
+        self.trex_prog["noise_texture"].value = 0
+        self.trex_prog["depth_texture"].value = 1
+        self.trex_prog["time"].value = time
         self.noise_texture.use(location=0)
-        self.final_quad.render(self.final_prog)
+        self.trex_quad.render(self.trex_prog)
 
 
 def main():
