@@ -32,86 +32,56 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import moderngl_window as mglw
-import numpy as np
-from moderngl_window import geometry
+
+import pygame
+
+from trex.engine import Engine
+from trex.scene import Scene
+from trex.thing import Thing
 
 WIDTH = 1024
 HEIGHT = WIDTH
-LAYERS = 1
 
 
-class MainWindow(mglw.WindowConfig):
-    gl_version = (3, 3)
-    title = "Trex Effect"
-    window_size = (WIDTH, HEIGHT)
-    aspect_ratio = WIDTH / HEIGHT
+class Rect(Thing):
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        depth: int,
+    ):
+        super().__init__(x, y)
+        self.width = width
+        self.height = height
+        self.depth = depth
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        # Random RGB, A=1
-        data = np.random.randint(
-            0,
-            256,
-            (WIDTH, HEIGHT, LAYERS, 4),
-            dtype="u1",
-        )
-        data[:, :, :, 3] = 255  # Set alpha to 255
-
-        self.texture = self.ctx.texture_array(
-            (WIDTH, HEIGHT, LAYERS),
-            4,
-            data=data,
-        )
-        self.quad = geometry.quad_fs()
-        self.prog = self.ctx.program(
-            vertex_shader="""\
-#version 330
-
-in vec3 in_position;
-in vec2 in_texcoord_0;
-
-out vec2 uv;
-
-void main() {
-    gl_Position = vec4(in_position, 1);
-    uv = in_texcoord_0;
-}
-""",
-            fragment_shader="""\
-#version 330
-
-out vec4 fragColor;
-in vec2 uv;
-
-uniform sampler2DArray texture0;
-uniform float num_layers;
-uniform float depth;
-uniform float time;
-
-void main() {
-    vec4 c = texture(texture0, vec3(uv + vec2(depth * time, 0.0), num_layers));
-
-    fragColor = c;
-}
-""",
+    def draw(self, surface: pygame.Surface):
+        pygame.draw.rect(
+            surface, self.depth, pygame.Rect(self.x, self.y, self.width, self.height)
         )
 
-    def on_render(self, time: float, frame_time: float):
-        self.ctx.clear()
 
-        self.texture.use(location=0)
-        self.prog["texture0"].value = 0
-        self.prog["num_layers"].value = 0
-        self.prog["depth"].value = 0
-        self.prog["time"].value = time * 0.1
-        self.texture.use(location=0)
-        self.quad.render(self.prog)
+class Scene1(Scene):
+    def __init__(self):
+        super().__init__()
+        red_rect = Rect(5, 5, 10, 10, 127)
+        blue_rect = Rect(400, 300, 250, 100, 1)
+        self.things.append(red_rect)
+        self.things.append(blue_rect)
 
 
 def main():
-    mglw.run_window_config(MainWindow)
+    pygame.init()
+
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+    engine = Engine(WIDTH, HEIGHT)
+    engine.scene_manager.push_scene(Scene1())
+    engine.run(screen)
+
+    pygame.quit()
 
 
 if __name__ == "__main__":
