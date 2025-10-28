@@ -32,6 +32,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from pathlib import Path
+
 import moderngl_window as mglw
 import numpy as np
 from moderngl_window import geometry
@@ -46,6 +48,7 @@ class MainWindow(mglw.WindowConfig):
     title = "Trex Effect"
     window_size = (WIDTH, HEIGHT)
     aspect_ratio = WIDTH / HEIGHT
+    resource_dir = Path().absolute()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -68,38 +71,7 @@ class MainWindow(mglw.WindowConfig):
         self.rect_quad = geometry.quad_2d(
             size=(0.5, 0.5),
         )
-        self.prog = self.ctx.program(
-            vertex_shader="""\
-#version 330
-
-in vec3 in_position;
-in vec2 in_texcoord_0;
-
-out vec2 uv;
-
-void main() {
-    gl_Position = vec4(in_position, 1);
-    uv = in_texcoord_0;
-}
-""",
-            fragment_shader="""\
-#version 330
-
-out vec4 fragColor;
-in vec2 uv;
-
-uniform sampler2DArray texture0;
-uniform float num_layers;
-uniform float depth;
-uniform float time;
-
-void main() {
-    vec4 c = texture(texture0, vec3(uv + vec2(depth * time, 0.0), num_layers));
-
-    fragColor = c;
-}
-""",
-        )
+        self.prog = self.load_program("shader1.glsl")
 
     def on_render(self, time: float, frame_time: float):
         self.ctx.clear()
