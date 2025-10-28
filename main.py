@@ -64,7 +64,10 @@ class MainWindow(mglw.WindowConfig):
             4,
             data=data,
         )
-        self.quad = geometry.quad_fs()
+        self.bg_quad = geometry.quad_fs()
+        self.rect_quad = geometry.quad_2d(
+            size=(0.5, 0.5),
+        )
         self.prog = self.ctx.program(
             vertex_shader="""\
 #version 330
@@ -107,7 +110,10 @@ void main() {
         self.prog["depth"].value = 0
         self.prog["time"].value = time * 0.1
         self.texture.use(location=0)
-        self.quad.render(self.prog)
+        self.bg_quad.render(self.prog)
+
+        self.prog["depth"].value = 1
+        self.rect_quad.render(self.prog)
 
 
 def main():
