@@ -34,9 +34,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import pygame
-from pygame import Color
 
-from trex.colors import WHITE
 from trex.engine import Engine
 from trex.scene import Scene
 from trex.thing import Thing
@@ -52,24 +50,24 @@ class Rect(Thing):
         y: float,
         width: float,
         height: float,
-        color: Color,
+        depth: int,
     ):
         super().__init__(x, y)
         self.width = width
         self.height = height
-        self.color = color
+        self.depth = depth
 
     def draw(self, surface: pygame.Surface):
         pygame.draw.rect(
-            surface, self.color, pygame.Rect(self.x, self.y, self.width, self.height)
+            surface, self.depth, pygame.Rect(self.x, self.y, self.width, self.height)
         )
 
 
 class Scene1(Scene):
     def __init__(self):
         super().__init__()
-        red_rect = Rect(100, 100, 200, 150, WHITE)
-        blue_rect = Rect(400, 300, 250, 100, WHITE)
+        red_rect = Rect(5, 5, 10, 10, 127)
+        blue_rect = Rect(400, 300, 250, 100, 1)
         self.things.append(red_rect)
         self.things.append(blue_rect)
 
@@ -79,7 +77,7 @@ def main():
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-    engine = Engine()
+    engine = Engine(WIDTH, HEIGHT)
     engine.scene_manager.push_scene(Scene1())
     engine.run(screen)
 

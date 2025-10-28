@@ -41,15 +41,24 @@ from .scene_manager import SceneManager
 
 
 class Engine:
-    def __init__(self):
+    def __init__(self, width: int, height: int):
         self.scene_manager = SceneManager()
+        self.depth_surface = pygame.Surface((width, height)).convert(8)
+        # self.depth_surface.set_palette(
+        #     [Color(i, i, i) for i in range(256)]
+        # )  # 8-bit surface
 
     def update(self, delta_time: float):
         self.scene_manager.update(delta_time)
 
     def draw(self, surface: Surface):
+        # 1. Render scene to depth surface
         surface.fill(BLACK)  # Clear screen with black
-        self.scene_manager.draw(surface)
+        self.scene_manager.draw(self.depth_surface)
+
+        # 3. Blit depth surface to main surface
+        surface.blit(self.depth_surface, (0, 0))
+        pygame.display.flip()
 
     def run(self, surface: Surface):
         clock = pygame.time.Clock()
@@ -66,5 +75,4 @@ class Engine:
             self.update(1 / 60)
             self.draw(surface)
 
-            pygame.display.flip()
             clock.tick(60)  # limits FPS to 60
