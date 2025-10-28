@@ -6,8 +6,8 @@ from PIL import Image
 
 
 def main():
-    width = 512
-    height = 512
+    width = 256
+    height = width
     fps = 60
     duration_seconds = 10
 
