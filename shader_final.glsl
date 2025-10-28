@@ -61,7 +61,8 @@ uniform float time;
 
 void main() {
     float depth = texture(depth_texture, uv).r;
-    vec4 c = texture(noise_texture, vec2(uv + vec2((depth - 0.5) * time, 0.0)));
+    float speed = (depth - 0.5);
+    vec4 c = texture(noise_texture, vec2(uv + vec2(speed * time, 0.0)));
 
     fragColor = c;
 }

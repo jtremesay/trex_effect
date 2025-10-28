@@ -69,27 +69,28 @@ class MainWindow(mglw.WindowConfig):
         self.final_quad = geometry.quad_fs()
         self.final_prog = self.load_program("shader_final.glsl")
 
+        # Speed data, between -16 and 16
         data = np.zeros((WIDTH, HEIGHT), dtype="f4")
-        # create a small rectangle in the center with depth 1.0
-        # the rest is 0.0
-        # This will create a depth buffer where the center is "closer"
-        # We have (-16; 16( layers of depth values
+
+        # Rect1
         rect_size = WIDTH * 3 // 4
         start = (WIDTH - rect_size) // 2
         end = start + rect_size
         data[start:end, start:end] = 3.0
 
+        # Rect2
         rect_size = WIDTH // 2
         start = (WIDTH - rect_size) // 2
         end = start + rect_size
         data[start:end, start:end] = 0.0
 
+        # Rect3
         rect_size = WIDTH // 4
         start = (WIDTH - rect_size) // 2
         end = start + rect_size
         data[start:end, start:end] = -3.0
 
-        data = (data + 16) / 32
+        data = (data + 16) / 32  # Normalize to [0, 1] range
 
         self.depth_buffer = self.ctx.depth_texture((WIDTH, HEIGHT), data=data)
 
