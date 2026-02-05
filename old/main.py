@@ -38,7 +38,7 @@ import moderngl_window as mglw
 import numpy as np
 from moderngl_window import geometry
 
-WIDTH = 512
+WIDTH = 128
 HEIGHT = WIDTH
 
 
