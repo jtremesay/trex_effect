@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Data
+data/rick_roll/original.webm
+data/rick_roll/flow_frames/
+data/rick_roll/frames/

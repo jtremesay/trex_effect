@@ -1,3 +1,5 @@
+#version 330
+/*
  ANTI-CAPITALIST SOFTWARE LICENSE (v 1.4)
 
 Copyright © 2025 Jonathan Tremesaygues
@@ -32,3 +34,37 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#if defined VERTEX_SHADER
+
+in vec3 in_position;
+in vec2 in_texcoord_0;
+
+out vec2 uv;
+
+void main() {
+    gl_Position = vec4(in_position, 1);
+    uv = in_texcoord_0;
+}
+
+#elif defined FRAGMENT_SHADER
+
+out vec4 fragColor;
+
+in vec2 uv;
+uniform sampler2D depth_texture;
+uniform sampler2D noise_texture;
+
+uniform float num_layers;
+uniform float time;
+
+void main() {
+    float depth = texture(depth_texture, uv).r;
+    float speed = (depth - 0.5);
+    vec4 c = texture(noise_texture, vec2(uv + vec2(speed * time, 0.0)));
+
+    fragColor = c;
+}
+
+#endif
